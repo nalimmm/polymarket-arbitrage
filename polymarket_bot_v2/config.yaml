@@ -1,0 +1,50 @@
+# =============================================================================
+# Polymarket BTC Up/Down bot - v2
+# Every parameter used by the code lives here. No hidden defaults.
+# =============================================================================
+
+capital_usd: 100
+
+data:
+  price_poll_seconds: 1        # Binance spot price
+  kline_poll_seconds: 60       # Binance 1-minute klines (vol update on close only)
+  book_poll_seconds: 2         # Polymarket order books
+  calibration_klines: 2880     # 2 days of 1-min klines at startup (lambda MLE needs a long window)
+  max_data_age_seconds: 10     # no trading on stale data
+
+model:
+  ewma_lambda: 0.94            # starting value only (RiskMetrics, calibrated on daily data)
+  fit_lambda: true             # re-estimated by maximum likelihood on the calibration window
+  lambda_bounds: [0.80, 0.999] # half-life between ~3 minutes and ~11 hours
+  jump_threshold_sigma: 3.0    # |return| > 3 local sigmas = jump
+  vol_stress: 0.20             # model uncertainty: price under sigma x (1 +/- 20%)
+
+signal:
+  min_edge: 0.03               # prudent probability minus ask, in probability points
+  max_edge: 0.30               # above this we assume a model / data error
+  min_token_price: 0.05
+  max_token_price: 0.95
+  no_entry_minutes_before_expiry: 5
+  cooldown_seconds: 15
+
+sizing:
+  kelly_fraction: 0.25         # quarter Kelly
+  max_pct_per_outcome: 0.025   # cap per market and side, on current equity
+  max_total_exposure_pct: 0.10
+  depth_tolerance: 0.02        # depth counted within 2 cents of best ask
+  max_depth_share: 0.50        # never take more than 50% of that depth
+  min_order_usd: 1.0           # Polymarket minimum order size
+
+exits:
+  convergence_band: 0.01       # exit when bid >= current theo - 1 cent
+  stop_loss_pct: 0.80          # exit if position marked down 80%
+  cutoff_minutes: 5            # forced exit before settlement
+
+execution:
+  mode: paper                  # paper only in this version
+  latency_seconds: 2.0         # decision -> fill, book re-read at fill time
+  fee_on_profit: 0.02
+
+logging:
+  trades_csv: trades.csv       # one line per closed position (for backtest vs realized)
+  signals_csv: signals.csv     # one line per evaluated opportunity
