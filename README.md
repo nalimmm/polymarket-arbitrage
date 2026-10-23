@@ -133,6 +133,4 @@ Tested end to end on synthetic markets: the model beats a deliberately noisy mar
 | New York timezone hard-coded as UTC−5 | `zoneinfo` America/New_York | Slug was wrong part of the year |
 | Parameters read from the wrong config sections | Typed config, no hidden defaults | Config values are actually used |
 
-## Known limitations
 
-Paper execution only. The model assumes zero drift over the hour. Historical backtests rely on an assumed spread and depth, so execution costs should be validated with replay backtests on real logged order books before any live deployment. The Polymarket `prices-history` endpoint has not been validated against every market in the range: check `markets.csv` and the number of price points after downloading.
