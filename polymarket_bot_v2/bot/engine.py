@@ -35,7 +35,13 @@ log = logging.getLogger(__name__)
 
 TICK_FIELDS = ["ts", "market", "spot", "strike", "minutes_left", "sigma_annual", "ewma_lambda", "jump_intensity",
                "theo_yes", "prudent_yes", "prudent_no", "bid_yes", "ask_yes", "bid_no", "ask_no",
+               "bid_size_yes", "ask_size_yes", "bid_size_no", "ask_size_no",
                "signal_side", "signal_edge", "equity", "exposure", "open_positions"]
+
+
+def _top(levels):
+    """Size (tokens) at the best level, logged so that replay backtests know the depth."""
+    return round(levels[0].size, 2) if levels else 0.0
 
 
 class Engine:
@@ -93,11 +99,12 @@ class Engine:
         self.tick()
 
     # ------------------------------------------------------------------ strategy
-    def tick(self, now: float = None) -> None:
+    def tick(self, now: float = None):
+        """One strategy step. Live and backtest both call this exact method; returns the quote."""
         now = now or time.time()
         m = self.poly.market
         if m.strike is None or not self.binance.is_fresh(self.cfg.data.max_data_age_seconds):
-            return
+            return None
         self.portfolio.mark(m)
         q = quote(self.binance.price, m.strike, m.minutes_to_expiry(now),
                   self.vol.sigma_minute, self.vol.jump_params(), self.cfg.model.vol_stress)
@@ -109,8 +116,11 @@ class Engine:
         if opp:
             self.broker.submit(opp, m, now)
         self._log_tick(now, m, q, opp)
+        return q
 
     def _log_tick(self, now, m, q, opp) -> None:
+        if not self.cfg.logging.signals_csv:
+            return
         path = Path(self.cfg.logging.signals_csv)
         new = not path.exists()
         by, bn = m.book_yes, m.book_no
@@ -118,6 +128,7 @@ class Engine:
                round(self.vol.sigma_annual, 4), round(self.vol.lam, 4), round(self.vol.jump_params().intensity, 5),
                round(q.theo_yes, 4), round(q.prudent_yes, 4), round(q.prudent_no, 4),
                by.best_bid, by.best_ask, bn.best_bid, bn.best_ask,
+               _top(by.bids), _top(by.asks), _top(bn.bids), _top(bn.asks),
                opp.side if opp else "", round(opp.edge, 4) if opp else "",
                round(self.portfolio.equity, 2), round(self.portfolio.total_exposure, 2), len(self.portfolio.open)]
         with path.open("a", newline="") as f:

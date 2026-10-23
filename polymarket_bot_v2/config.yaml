@@ -48,3 +48,10 @@ execution:
 logging:
   trades_csv: trades.csv       # one line per closed position (for backtest vs realized)
   signals_csv: signals.csv     # one line per evaluated opportunity
+
+backtest:
+  data_dir: data                 # downloaded history (cached)
+  results_dir: results
+  assumed_spread: 0.02           # historical mode only: full bid-ask spread around the price series
+  assumed_depth_tokens: 200      # historical mode only: size available at best bid / best ask
+  replay_default_depth: 200      # replay mode: used if a log has no size columns
