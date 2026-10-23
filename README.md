@@ -46,7 +46,7 @@ No trading if the Binance price is more than 10 seconds old. Every tick is logge
 
 Volatility: EWMA on 1-minute log returns, σ²(t) = λ × σ²(t−1) + (1 − λ) × r²(t). The variance is the state variable updated every minute; λ sets the model's memory (half-life = ln 0.5 / ln λ).
 
-λ is not hard-coded at 0.94: that RiskMetrics value was calibrated on daily returns. It is estimated by maximum likelihood over the calibration window, i.e. the value whose one-minute variance forecasts best explain the observed returns. Validation on simulated data: the estimator recovers the true λ with a standard deviation of 0.004 on 2,880 returns (0.016 on 500, hence the 2-day window). The fitted value, its half-life and the likelihood gain versus 0.94 are logged at startup.
+λ is not hard-coded at 0.94 anymore: that value was calibrated on daily returns. It is estimated by maximum likelihood over the calibration window, or the value whose one-minute variance forecasts best explain the observed returns. Validation on simulated data: the estimator recovers the true λ with a standard deviation of 0.004 on 2,880 returns (0.016 on 500, hence the 2-day window). The fitted value, its half-life and the likelihood gain versus 0.94 are logged at startup.
 
 Jumps: a return larger than 3 local sigmas is classified as a jump, excluded from the diffusive variance and from the likelihood, and used to estimate jump frequency and size. Since detection depends on λ, calibration runs in three passes: detect jumps with the initial λ, fit λ on the remaining returns, rebuild the variance path with the fitted λ.
 
