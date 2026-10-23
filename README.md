@@ -78,8 +78,6 @@ Positions are marked at the bid. Exits, in order of priority:
 2. loss of 80% or more: stop;
 3. bid ≥ current fair value − 1 cent: convergence. Covers both profit taking (the market caught up with the model) and edge decay (the model moved against us).
 
-A 2% fee is charged on profits. Every closed position is written to `trades.csv`.
-
 ## Changes from v1
 
 | v1 | v2 | Why |
@@ -96,6 +94,4 @@ A 2% fee is charged on profits. Every closed position is written to `trades.csv`
 | New York timezone hard-coded as UTC−5 | `zoneinfo` America/New_York | Slug was wrong part of the year |
 | Parameters read from the wrong config sections | Typed config, no hidden defaults | Config values are actually used |
 
-## Known limitations
 
-Paper execution only. The model assumes zero drift over the hour. Model calibration (does a 60% forecast come true 60% of the time?) still has to be measured on `signals.csv` data before any live deployment.
