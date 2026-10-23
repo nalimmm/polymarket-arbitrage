@@ -108,8 +108,19 @@ class Portfolio:
                 done.append(self._close(p, market, reason, now))
         return done
 
-    def _close(self, p: Position, market: Market, reason: str, now: float) -> Position:
-        proceeds, _ = market.book(p.side).sell_fill(p.tokens)
+    def settle(self, market: Market, up: bool, now: float) -> List[Position]:
+        """Expiry settlement for anything still open (only if the cutoff exit could not trade)."""
+        done = []
+        for p in list(self.open.values()):
+            if p.market == market.slug:
+                win = (p.side == "YES") == up
+                done.append(self._close(p, market, "settlement", now, proceeds=p.tokens if win else 0.0))
+        return done
+
+    def _close(self, p: Position, market: Market, reason: str, now: float,
+               proceeds: Optional[float] = None) -> Position:
+        if proceeds is None:
+            proceeds, _ = market.book(p.side).sell_fill(p.tokens)
         gross = proceeds - p.cost
         p.pnl = gross - (self.fee * gross if gross > 0 else 0.0)
         self.cash += p.cost + p.pnl

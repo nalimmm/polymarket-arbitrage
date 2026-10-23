@@ -64,6 +64,15 @@ class LogCfg:
 
 
 @dataclass(frozen=True)
+class BacktestCfg:
+    data_dir: str
+    results_dir: str
+    assumed_spread: float
+    assumed_depth_tokens: float
+    replay_default_depth: float
+
+
+@dataclass(frozen=True)
 class Config:
     capital_usd: float
     data: DataCfg
@@ -73,6 +82,7 @@ class Config:
     exits: ExitCfg
     execution: ExecCfg
     logging: LogCfg
+    backtest: BacktestCfg
 
 
 def load_config(path: str = "config.yaml") -> Config:
@@ -86,4 +96,5 @@ def load_config(path: str = "config.yaml") -> Config:
         exits=ExitCfg(**raw["exits"]),
         execution=ExecCfg(**raw["execution"]),
         logging=LogCfg(**raw["logging"]),
+        backtest=BacktestCfg(**raw["backtest"]),
     )
